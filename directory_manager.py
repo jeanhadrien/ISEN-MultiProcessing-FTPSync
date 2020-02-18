@@ -4,23 +4,25 @@ import time
 from Directory import Directory
 from File import File
 from talk_to_ftp import TalkToFTP
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 import multiproc
 import multiprocessing
+
 # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
 
 class DirectoryManager:
-
     def __init__(self, ftp_website, directory, depth, nb_multi, excluded_extensions):
+        # dictionary to remember the instance of File / Directory saved on the FTP
+        self.synchronize_dict = {}
         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         self.ftp_website = ftp_website
         self.listProcesses = []
         self.nb_multi = nb_multi
         self.uploadedFilesQueue = multiprocessing.Queue()
-        if self.nb_multi>0:
+        if self.nb_multi > 0:
             for x in range(self.nb_multi):
                 p = multiprocessing.Process(target=multiproc.simultaneousFileUploadV2,
                                             args=(self.ftp_website, multiproc.FileUploadTask.QUEUE,))
@@ -32,8 +34,7 @@ class DirectoryManager:
         self.depth = depth
         # list of the extensions to exclude during synchronization
         self.excluded_extensions = excluded_extensions
-        # dictionary to remember the instance of File / Directory saved on the FTP
-        self.synchronize_dict = {}
+
         self.os_separator_count = len(directory.split(os.path.sep))
         # list of the path explored for each synchronization
         self.paths_explored = []
@@ -55,9 +56,33 @@ class DirectoryManager:
 
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     def catchRemainingProcesses(self):
-        if (self.nb_multi !=0):
+        """
+        Catches all spawned processes related to file uploads.
+        """
+        if self.nb_multi != 0:
             for process in self.listProcesses:
                 process.join()
+
+    def sendFile(self, path_file, srv_full_path, file_name):
+        """
+        Sends a file to remote FTP server.
+        :param path_file: local path to file
+        :param srv_full_path: server path to file
+        :param file_name: filename
+        """
+        if self.nb_multi == -1:
+            # if we are in infinite mode, we spawn a process with task
+            p = multiprocessing.Process(target=multiproc.simultaneousFileUploadV1,
+                                        args=(self.ftp_website, path_file, srv_full_path, file_name,))
+            p.start()
+            self.listProcesses.append(p)
+        elif self.nb_multi == 0:
+            # if we are in serialized mode, we use original method
+            self.ftp.file_transfer(path_file, srv_full_path, file_name)
+        else:
+            # if we are in definite mode, we add a job for them
+            job = multiproc.FileUploadTask(path_file, srv_full_path, file_name)
+            multiproc.FileUploadTask.QUEUE.put(job)
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
     def synchronize_directory(self, frequency):
@@ -79,8 +104,6 @@ class DirectoryManager:
 
             # wait before next synchronization
             time.sleep(frequency)
-
-
 
     def search_updates(self, directory):
         # scan recursively all files & directories in the root directory
@@ -105,7 +128,7 @@ class DirectoryManager:
                         # create it on FTP server
                         split_path = folder_path.split(self.root_directory)
                         srv_full_path = '{}{}'.format(self.ftp.directory, split_path[1])
-                        directory_split = srv_full_path.rsplit(os.path.sep,1)[0]
+                        directory_split = srv_full_path.rsplit(os.path.sep, 1)[0]
                         if not self.ftp.if_exist(srv_full_path, self.ftp.get_folder_content(directory_split)):
                             # add this directory to the FTP server
                             self.ftp.create_folder(srv_full_path)
@@ -129,53 +152,26 @@ class DirectoryManager:
                             srv_full_path = '{}{}'.format(self.ftp.directory, split_path[1])
                             self.ftp.remove_file(srv_full_path)
                             # update this file on the FTP server
-                            ##self.ftp.file_transfer(path_file, srv_full_path, file_name)
-
+                            #self.ftp.file_transfer(path_file, srv_full_path, file_name)
                             # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-                            if self.nb_multi == -1:
-                                # if we are in infinite mode, we spawn a process with task
-                                p = multiprocessing.Process(target=multiproc.simultaneousFileUploadV1,
-                                                            args=(self.ftp_website, path_file, srv_full_path, file_name,))
-                                p.start()
-                                self.listProcesses.append(p)
-                            elif self.nb_multi == 0:
-                                # if we are in serialized mode, we use original method
-                                self.ftp.file_transfer(path_file, srv_full_path, file_name)
-                            else:
-                                # if we are in definite mode, we add a job for them
-                                newJob = multiproc.FileUploadTask(path_file, srv_full_path, file_name)
-                                multiproc.FileUploadTask.QUEUE.put(newJob)
+                            self.sendFile(path_file, srv_full_path, file_name)
                             # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-
-
-
 
                     else:
-
                         # file get created
                         self.synchronize_dict[file_path] = File(file_path)
+                        #print("file_path:"+ file_path)
                         split_path = file_path.split(self.root_directory)
                         srv_full_path = '{}{}'.format(self.ftp.directory, split_path[1])
                         # update this file on the FTP server
-                        ##self.ftp.file_transfer(path_file, srv_full_path, file_name)
+                        #self.ftp.file_transfer(path_file, srv_full_path, file_name)
 
                         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-                        if self.nb_multi == -1:
-                            # if we are in infinite mode, we spawn a process with task
-                            p = multiprocessing.Process(target=multiproc.simultaneousFileUploadV1,
-                                                        args=(self.ftp_website, path_file, srv_full_path, file_name,))
-                            p.start()
-                            self.listProcesses.append(p)
-                        elif self.nb_multi == 0:
-                            # if we are in serialized mode, we use original method
-                            self.ftp.file_transfer(path_file, srv_full_path, file_name)
-                        else:
-                            # if we are in definite mode, we add a job for them
-                            newJob = multiproc.FileUploadTask(path_file, srv_full_path, file_name)
-                            multiproc.FileUploadTask.QUEUE.put(newJob)
+                        self.sendFile(path_file, srv_full_path, file_name)
+                        #print("path_file:"+path_file)
+                        #print("srv_full_path:"+srv_full_path)
+                        #print("file_name"+file_name+"\n")
                         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
 
     def any_removals(self):
         # if the length of the files & folders to synchronize == number of path explored
@@ -231,9 +227,10 @@ class DirectoryManager:
         sorted_containers = sorted(directory_containers.values())
 
         # we iterate starting from the innermost file
-        for i in range(len(sorted_containers)-1, -1, -1):
+        for i in range(len(sorted_containers) - 1, -1, -1):
             for to_delete in sorted_containers[i]:
-                to_delete_ftp = "{0}{1}{2}".format(self.ftp.directory, os.path.sep, to_delete.split(self.root_directory)[1])
+                to_delete_ftp = "{0}{1}{2}".format(self.ftp.directory, os.path.sep,
+                                                   to_delete.split(self.root_directory)[1])
                 if isinstance(self.synchronize_dict[to_delete], File):
                     self.ftp.remove_file(to_delete_ftp)
                     self.to_remove_from_dict.append(to_delete)
