@@ -56,7 +56,7 @@ class DirectoryManager:
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     def catchRemainingProcesses(self):
         if (self.nb_multi !=0):
-            for process in self.nb_multi:
+            for process in self.listProcesses:
                 process.join()
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
