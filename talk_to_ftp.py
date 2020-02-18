@@ -23,21 +23,21 @@ class TalkToFTP:
 
     def create_folder(self, folder):
         self.ftp.mkd(folder)
-        Logger.log_info("Folder created : " + folder)
+        Logger.log_info("FOLDER Created  : " + folder)
 
     def remove_folder(self, folder):
         self.ftp.rmd(folder)
-        Logger.log_info("Folder removed : " + folder)
+        Logger.log_info("FOLDER Removed  : " + folder)
 
     def file_transfer(self, path, srv_path, file_name):
         file = open(os.path.join(path, file_name), 'rb')
         self.ftp.storbinary('STOR ' + srv_path, file)
         file.close()
-        Logger.log_info("File created / updated : srv {0} file {1}".format(srv_path, file_name ))
+        Logger.log_info("  FILE Created  : {0} ".format(srv_path ))
 
     def remove_file(self, file):
         self.ftp.delete(file)
-        Logger.log_info("File removed : %s" + file)
+        Logger.log_info("  FILE Removed  : " + file)
 
     def get_folder_content(self, path):
         init_list = self.ftp.nlst(path)
