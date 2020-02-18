@@ -6,17 +6,6 @@ from File import File
 from talk_to_ftp import TalkToFTP
 import multiprocessing
 
-
-def ProcessCheck(ftpInfos,root_directory):
-    myFtpNotConnected = TalkToFTP(ftpInfos)
-
-    ## faire le check des dossier etc
-    ## faire ce que je dois faire pr le reste
-
-    ## spawn un thread par fichier à upload
-
-    return None
-
 def simultaneousFileUploadV1(ftp_website, path, srv_path, file_name):
     from logger import Logger
     from talk_to_ftp import TalkToFTP
