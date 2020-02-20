@@ -1,6 +1,7 @@
 import os
 import multiprocessing
 
+
 def simultaneousFileUploadV1(ftp_website, path, srv_path, file_name):
     """
     Upload file to ftp_website
@@ -9,11 +10,11 @@ def simultaneousFileUploadV1(ftp_website, path, srv_path, file_name):
     from talk_to_ftp import TalkToFTP
     myFtp = TalkToFTP(ftp_website)
     with open(os.path.join(path, file_name), 'rb') as file:
-        Logger.log_info("  FILE Starting : {0} - (Process : {1})".format(srv_path,os.getpid()))
+        Logger.log_info("  FILE Starting : {0} - (Process : {1})".format(srv_path, os.getpid()))
         myFtp.connect()
         myFtp.ftp.storbinary('STOR ' + srv_path, file)
         myFtp.disconnect()
-        Logger.log_info("  FILE Done     : {0} - (Process : {1})".format(srv_path,os.getpid()))
+        Logger.log_info("  FILE Done     : {0} - (Process : {1})".format(srv_path, os.getpid()))
 
 
 class FileUploadTask:
@@ -23,10 +24,11 @@ class FileUploadTask:
     QUEUE = multiprocessing.Queue()
     IS_RUNNING = True
 
-    def __init__(self,path, srv_path, file_name):
+    def __init__(self, path, srv_path, file_name):
         self.path = path
         self.srv_path = srv_path
         self.file_name = file_name
+
 
 def simultaneousFileUploadV2(ftp_website, JobQueue):
     """
@@ -49,7 +51,3 @@ def simultaneousFileUploadV2(ftp_website, JobQueue):
                     myFtp.ftp.storbinary('STOR ' + myJob.srv_path, file)
                     myFtp.disconnect()
                     Logger.log_info("  FILE Done     : {0} - (Process : {1})".format(myJob.srv_path, os.getpid()))
-
-
-
-

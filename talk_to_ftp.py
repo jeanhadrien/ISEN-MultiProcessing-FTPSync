@@ -1,5 +1,5 @@
 import os
-from ftplib import FTP
+from ftplib import FTP, error_perm
 from logger import Logger
 
 
@@ -33,11 +33,21 @@ class TalkToFTP:
         file = open(os.path.join(path, file_name), 'rb')
         self.ftp.storbinary('STOR ' + srv_path, file)
         file.close()
-        Logger.log_info("  FILE Created  : {0} ".format(srv_path ))
+        Logger.log_info("  FILE Created  : {0} ".format(srv_path))
 
     def remove_file(self, file):
-        self.ftp.delete(file)
-        Logger.log_info("  FILE Removed  : " + file)
+        # self.ftp.delete(file)
+        # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        try:
+            self.ftp.size(file)
+        except error_perm:
+            # file wasn't uploaded
+            pass
+        finally:
+            self.ftp.delete(file)
+            Logger.log_info("  FILE Removed  : " + file)
+        # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+        # Logger.log_info("  FILE Removed  : " + file)
 
     def get_folder_content(self, path):
         init_list = self.ftp.nlst(path)
@@ -51,5 +61,3 @@ class TalkToFTP:
             return True
         else:
             return False
-
-

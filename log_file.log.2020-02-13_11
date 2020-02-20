@@ -1,0 +1,5 @@
+2020-02-13 10:56:40,617 - root - INFO - logger : 20 - Valid parameters
+2020-02-13 11:22:57,965 - root - ERROR - logger : 30 - Invalid number of threads : cannot be 0 or less
+2020-02-13 11:23:09,576 - root - ERROR - logger : 30 - Invalid number of threads : cannot be 0 or less
+2020-02-13 11:23:27,056 - root - ERROR - logger : 30 - Invalid number of threads : cannot be 0 or less
+2020-02-13 11:23:29,769 - root - INFO - logger : 20 - Valid parameters

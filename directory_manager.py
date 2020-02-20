@@ -83,6 +83,7 @@ class DirectoryManager:
             # if we are in definite mode, we add a job for them
             job = multiproc.FileUploadTask(path_file, srv_full_path, file_name)
             multiproc.FileUploadTask.QUEUE.put(job)
+
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
     def synchronize_directory(self, frequency):
@@ -152,7 +153,7 @@ class DirectoryManager:
                             srv_full_path = '{}{}'.format(self.ftp.directory, split_path[1])
                             self.ftp.remove_file(srv_full_path)
                             # update this file on the FTP server
-                            #self.ftp.file_transfer(path_file, srv_full_path, file_name)
+                            # self.ftp.file_transfer(path_file, srv_full_path, file_name)
                             # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                             self.sendFile(path_file, srv_full_path, file_name)
                             # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -160,17 +161,17 @@ class DirectoryManager:
                     else:
                         # file get created
                         self.synchronize_dict[file_path] = File(file_path)
-                        #print("file_path:"+ file_path)
+                        # print("file_path:"+ file_path)
                         split_path = file_path.split(self.root_directory)
                         srv_full_path = '{}{}'.format(self.ftp.directory, split_path[1])
                         # update this file on the FTP server
-                        #self.ftp.file_transfer(path_file, srv_full_path, file_name)
+                        # self.ftp.file_transfer(path_file, srv_full_path, file_name)
 
                         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                         self.sendFile(path_file, srv_full_path, file_name)
-                        #print("path_file:"+path_file)
-                        #print("srv_full_path:"+srv_full_path)
-                        #print("file_name"+file_name+"\n")
+                        # print("path_file:"+path_file)
+                        # print("srv_full_path:"+srv_full_path)
+                        # print("file_name"+file_name+"\n")
                         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
     def any_removals(self):
