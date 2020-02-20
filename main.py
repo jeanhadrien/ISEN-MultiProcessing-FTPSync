@@ -5,7 +5,7 @@ import sys
 
 if __name__ == "__main__":
     print(sys.version)
-    
+
     # get parameters from command line
     ftp_website, local_directory, max_depth, refresh_frequency, nb_multi, excluded_extensions = get_user_parameters()
 
