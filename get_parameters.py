@@ -11,12 +11,14 @@ def get_user_parameters():
     parser.add_argument("ftp_website", help="Full FTP Website(username,password,directory) ", type=str)
     parser.add_argument("local_directory", help="Directory we want to synchronize", type=str)
     parser.add_argument("max_depth", help="Maximal depth to synchronize starting from the root directory", type=int)
-    parser.add_argument("refresh_frequency", help="Refresh frequency to synchronize with FTP server (in seconds)", type=int)
+    parser.add_argument("refresh_frequency", help="Refresh frequency to synchronize with FTP server (in seconds)",
+                        type=int)
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    parser.add_argument("nb_multi",help="Number of processes to spawn : -1 for infinite processes, 0 for serialized "+
-                                        "upload, or any positive integer for limited number processes ", type=int)
+    parser.add_argument("nb_multi", help="Number of processes to spawn : -1 for infinite processes, 0 for serialized "
+                                         "upload, or any positive integer for limited number processes ", type=int)
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    parser.add_argument("excluded_extensions", nargs='*', help="List of the extensions to excluded when synchronizing (optional)",
+    parser.add_argument("excluded_extensions", nargs='*',
+                        help="List of the extensions to excluded when synchronizing (optional)",
                         type=str, default=[])
     # nargs = '*' : the last argument take zero or more parameter
     args = parser.parse_args()
@@ -61,16 +63,15 @@ def get_user_parameters():
         Logger.log_error("Invalid input for processes : must be an integer")
         wrong_input = True
     else:
-        if nb_multi<-1:
+        if nb_multi < -1:
             Logger.log_error("Invalid value for processes : it can be -1,0, or any positive integer")
     # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     # get a list of the excluded extensions
     excluded_extensions = args.excluded_extensions
-
     if wrong_input is False:
         Logger.log_info("Valid parameters")
         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-        #return ftp_website, local_directory, max_depth, refresh_frequency, excluded_extensions
+        # return ftp_website, local_directory, max_depth, refresh_frequency, excluded_extensions
         return ftp_website, local_directory, max_depth, refresh_frequency, nb_multi, excluded_extensions
         # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     else:
